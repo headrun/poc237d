@@ -38,6 +38,8 @@ def xcode(text, encoding='utf8', mode='strict'):
     return text.encode(encoding, mode) if isinstance(text, unicode) else text
 
 
+def extract_data(data, path, delem=''):
+    return delem.join(i.strip() for i in data.xpath(path).extract() if i).strip()
 
 class HCChhattisghar(Spider):
     name = 'chhattisghar_browse'
@@ -64,7 +66,8 @@ class HCChhattisghar(Spider):
         self.todays_excel_file = csv.writer(self.oupf) 
         court_headers = ['Case number', 'Petitioner', 'Petitioner Advocate', 'Respondent', 'Respondent Advocate', 'Case status', 'Decision Date']
         self.todays_excel_file.writerow(court_headers)
-
+        self.adv_regex = re.compile(r'Advocate(.*)')
+        self.add_regex = re.compile(r'Address(.*)')
 
     def parse(self, response):
 	sel = Selector(response)
@@ -120,32 +123,34 @@ class HCChhattisghar(Spider):
 	
     def parse_view(self, response):
         sel = Selector(text=normalize(response.body))  
-        pet_details = '\n'.join(sel.xpath(pet_adv_xpath).extract())
-        resp_details = '\n'.join(sel.xpath(resp_adv_xpath).extract())
-        case_num = ''.join(sel.xpath(case_num_xpath).extract()).strip(':').strip().split('/')[0]
-
+        pet_details  = extract_data(sel, pet_adv_xpath, '\n')
+        resp_details = extract_data(sel, resp_adv_xpath, '\n')
+        case_num = self.clean_text(extract_data(sel, case_num_xpath), ':').split('/')[0]
+        
         pet_adv, pet_add = '', ''
         resp_adv, resp_add = '', ''
         peti, respi = '', ''
         status = ''
         if pet_details:
-            peti = pet_details.split('\n')[0].strip().split('1)')[-1].strip().strip(',').strip()
-            pet_adv = ''.join(re.findall('Advocate(.*)', pet_details)).strip().strip('-').strip().replace('Advocate', '').strip('-').strip()
-            pet_add = ''.join(re.findall('Address(.*)', pet_details)).strip().strip('-').strip()
-
+            peti = self.clean_text(pet_details.split('\n')[0].strip().split('1)')[-1], ',')
+            pet_adv = self.clean_text(self.clean_text(''.join(re.findall(self.adv_regex, pet_details)), '-').replace('Advocate', ''), '-')
+            pet_add = self.clean_text(''.join(re.findall(self.add_regex, pet_details)), '-')
         if resp_details:
-            respi = resp_details.split('\n')[0].strip().split('1)')[-1].strip().strip(',').strip()
-            resp_adv = ''.join(re.findall('Advocate(.*)', resp_details)).strip().strip('-').strip().replace('Advocate', '').strip('-').strip()
-            resp_add = ''.join(re.findall('Address(.*)', resp_details)).strip().strip('-').strip()
+            respi = self.clean_text(resp_details.split('\n')[0].strip().split('1)')[-1], ',')
+            resp_adv = self.clean_text(self.clean_text(''.join(re.findall(self.adv_regex, resp_details)), '-').replace('Advocate', ''), '-')
+            resp_add = self.clean_text(''.join(re.findall(self.add_regex, resp_details)), '-')
 
-        status = ''.join(sel.xpath(status_xpath).extract()).strip(':')
+        status = self.clean_text(extract_data(sel, status_xpath), ':')
 
         if not status:
-            status = ''.join(sel.xpath(alt_status_xpath).extract()).strip(':')
+            status = self.clean_text(extract_data(sel, alt_status_xpath), ':')
 
-        decision_date = ''.join(sel.xpath(decision_dt_xpath).extract()).strip(':')
-        court_values = [case_num, peti.strip(), pet_adv.strip(',').strip(), respi.strip(), resp_adv.strip().strip(',').strip(), status.strip(), decision_date]
-        court_values = [e.replace(u'\xa0', ' ').replace(',,', ',').strip() for e in court_values]
+        decision_date = self.clean_text(extract_data(sel, decision_dt_xpath), ':')
+        court_values = [case_num, peti, pet_adv, respi, resp_adv, status, decision_date]
+        court_values = [self.clean_text(e.replace(u'\xa0', ' ').replace(',,', ',').strip(), ',') for e in court_values]
         
         self.todays_excel_file.writerow(court_values)
-         
+       
+    def clean_text(self, text, param):
+        return text.strip().strip(param).strip()
+      
