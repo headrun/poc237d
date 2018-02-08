@@ -4,10 +4,11 @@ import datetime
 from scrapy.http import Request, FormRequest
 from scrapy.spider import Spider
 from scrapy.selector import Selector
-
+from xpaths_file import *
 
 def normalize(text):
     return clean(compact(xcode(text)))
+
 def clean(text):
     if not text: return text 
 
@@ -57,7 +58,8 @@ class HCChhattisghar(Spider):
         self.word = kwargs.get('word', '')
         self.year = kwargs.get('year', '2017')
         self.path = kwargs.get('path', '')
-        self.excel_file_name = self.path + '/%s_%s_%s_hc_chhattisgarh.csv'%(self.word.replace(' ', '-'), self.year, str(datetime.datetime.now().date()))
+        if self.path:self.path += '/'
+        self.excel_file_name = self.path + '%s_%s_%s_hc_chhattisgarh.csv'%(self.word.replace(' ', '-'), self.year, str(datetime.datetime.now().date()))
         self.oupf = open(self.excel_file_name, 'w+')
         self.todays_excel_file = csv.writer(self.oupf) 
         court_headers = ['Case number', 'Petitioner', 'Petitioner Advocate', 'Respondent', 'Respondent Advocate', 'Case status', 'Decision Date']
@@ -67,7 +69,7 @@ class HCChhattisghar(Spider):
     def parse(self, response):
 	sel = Selector(response)
         headers = response.headers
-        sid = sel.xpath('//input[@name="__csrf_magic"]/@value').extract()
+        sid = sel.xpath(csrf_xpath).extract()
         sessionid = headers.get('Set-Cookie', '')
         sessionid = ''.join(re.findall('PHPSESSID=(.*); path', sessionid))
         data = [('__csrf_magic', ''.join(sid)), ('undefined', '')]
@@ -118,9 +120,9 @@ class HCChhattisghar(Spider):
 	
     def parse_view(self, response):
         sel = Selector(text=normalize(response.body))  
-       	pet_details = '\n'.join(sel.xpath('//span[@class="Petitioner_Advocate_table"]/text()').extract())
-	resp_details = '\n'.join(sel.xpath('//span[@class="Respondent_Advocate_table"]/text()').extract())
-        case_num = ''.join(sel.xpath('//label[contains(text(), "Registration Number")]/../../label/text()').extract()).strip(':').strip().split('/')[0]
+        pet_details = '\n'.join(sel.xpath(pet_adv_xpath).extract())
+        resp_details = '\n'.join(sel.xpath(resp_adv_xpath).extract())
+        case_num = ''.join(sel.xpath(case_num_xpath).extract()).strip(':').strip().split('/')[0]
 
         pet_adv, pet_add = '', ''
         resp_adv, resp_add = '', ''
@@ -136,12 +138,12 @@ class HCChhattisghar(Spider):
             resp_adv = ''.join(re.findall('Advocate(.*)', resp_details)).strip().strip('-').strip().replace('Advocate', '').strip('-').strip()
             resp_add = ''.join(re.findall('Address(.*)', resp_details)).strip().strip('-').strip()
 
-        status = ''.join(sel.xpath('//strong[contains(text(), "Case Status ")]/following-sibling::strong/text()').extract()).strip(':')     
+        status = ''.join(sel.xpath(status_xpath).extract()).strip(':')
 
         if not status:
-            status = ''.join(sel.xpath('//strong[contains(text(), "Stage of Case")]/following-sibling::strong/text()').extract()).strip(':') 
+            status = ''.join(sel.xpath(alt_status_xpath).extract()).strip(':')
 
-        decision_date = ''.join(sel.xpath('//strong[contains(text(), "Decision Date")]/following-sibling::strong/text()').extract()).strip(':')
+        decision_date = ''.join(sel.xpath(decision_dt_xpath).extract()).strip(':')
         court_values = [case_num, peti.strip(), pet_adv.strip(',').strip(), respi.strip(), resp_adv.strip().strip(',').strip(), status.strip(), decision_date]
         court_values = [e.replace(u'\xa0', ' ').replace(',,', ',').strip() for e in court_values]
         

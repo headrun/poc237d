@@ -20,6 +20,8 @@ scrapy crawl chhattisghar_browse -a word='gaurav' -a year='2017' -a path='csv_fi
 input file samples:
 
 lal mishra|2018
+
+
 gaurav|2017
 
 python hc_chattisghar_wrapper.py
