@@ -6,7 +6,7 @@ from scrapy.http import FormRequest
 
 from kpmgkapoc.utils import *
 from kpmgkapoc.items import *
-import karnatakajudiciary_xpaths as KX
+import sys
 
 class KarnatakajudiciaryBrowseSpider(scrapy.Spider):
     """ Spider name """
@@ -30,76 +30,93 @@ class KarnatakajudiciaryBrowseSpider(scrapy.Spider):
         self.case_type = kwargs.get('ctype', '0')
 
     def parse(self, response):
-        """Start here"""
-        sel = Selector(response)
-        self.log.debug('Scrape started for %s in %s ' % (self.resp_name, self.bench))
-        if self.resp_name == '':
-            self.log.debug('Respondent or Petitioner name is needed')
-            return
-        if self.from_ == '' or self.to_ == '':
-            self.log.debug('Filing - From Date or To Date is needed. -a from="dd/mm/yyyy" and -a to="dd/mm/yyyy"')
-            return
-        event_validation = ''.join(sel.xpath(KX.event_validation_xpath).extract())
-        view_state = ''.join(sel.xpath(KX.view_state_xpath).extract())
-        generator = ''.join(sel.xpath(KX.generator_xpath).extract())
-
-        benches = sel.xpath(KX.benches_xpath)
-        bench_dict = {}
-        for bench in benches:
-            key = ''.join(bench.xpath('./text()').extract()).strip()
-            value = ''.join(bench.xpath('./@value').extract())
-            bench_dict.update({key : value})
-
-        bench_value = bench_dict[self.bench]
-
-        petresdonts = sel.xpath(KX.petresdonts_xpath)
-        petresdont_dict = {}
-        for petresdont in petresdonts:
-            key = ''.join(petresdont.xpath('./text()').extract())
-            value = ''.join(petresdont.xpath('./@value').extract())
-            petresdont_dict.update({key : value})
-
-        petresdont_value = self.who
-        if self.who != '2':
-            petresdont_value = petresdont_dict[self.who]
-
-        districts = sel.xpath(KX.districts_xpath)
-        district_dict = {}
-        for district in districts:
-            key = ''.join(district.xpath('./text()').extract())
-            value = ''.join(district.xpath('./@value').extract())
-            district_dict.update({key : value})
-
-        district_value = self.district
-        if self.district != '0':
-            district_value = district_dict[self.district]
-
-        submitxy = [(random.randint(10, 90), random.randint(10, 90)) for i in range(10)]
-        submitx, submity = random.choice(submitxy)
-
-        form_data = {'__EVENTARGUMENT' : ''}
-        form_data.update({'__EVENTTARGET' : ''})
-        form_data.update({'__EVENTVALIDATION' : event_validation})
-        form_data.update({'__VIEWSTATE' : view_state})
-        form_data.update({'__VIEWSTATEGENERATOR' : generator})
-        form_data.update({'ctl00$ContentPlaceHolder1$hfBench' : bench_value})
-        form_data.update({'ctl00$ContentPlaceHolder1$ddlBench' : bench_value})
-        form_data.update({'ctl00$ContentPlaceHolder1$ddlPetRespDont' : petresdont_value})
-        form_data.update({'ctl00$ContentPlaceHolder1$ddlDistrict' : district_value})
-        form_data.update({'ctl00$ContentPlaceHolder1$txtPartyName' : self.resp_name})
-        form_data.update({'ctl00$ContentPlaceHolder1$txtFrmDate' : self.from_})
-        form_data.update({'ctl00$ContentPlaceHolder1$txtToDate' : self.to_})
-        form_data.update({'ctl00$ContentPlaceHolder1$hfdate' : self.to_})
-        form_data.update({'ctl00$ContentPlaceHolder1$btnSubmit.x' : submitx})
-        form_data.update({'ctl00$ContentPlaceHolder1$btnSubmit.y' : submity})
-
-        url = 'http://karnatakajudiciary.kar.nic.in/CaseStatus_PartyName.aspx'
-        yield FormRequest(url, callback=self.parse_next, formdata=form_data, dont_filter=True)
+        try:
+            self.log.debug('in parse')
+            sel = Selector(response)
+            log.debug('Scrape started for %s in %s ' % (self.resp_name, self.bench))
+            if self.resp_name == '':
+                return
+            if self.from_ == '' or self.to_ == '':
+                return
+            event_validation = ''.join(sel.xpath('.//input[contains(@id,"__EVENTVALIDATION")]/@value').extract())
+            view_state = ''.join(sel.xpath('.//input[contains(@id,"__VIEWSTATE")]/@value').extract())
+            generator = ''.join(sel.xpath('.//input[contains(@id,"__VIEWSTATEGENERATOR")]/@value').extract())
+    
+            benches = sel.xpath('.//select[contains(@id,"ctl00_ContentPlaceHolder1_ddlBench")]/option')
+            bench_dict = {}
+            for bench in benches:
+                key = ''.join(bench.xpath('./text()').extract()).strip()
+                value = ''.join(bench.xpath('./@value').extract())
+                bench_dict.update({key : value})
+    
+            bench_value = bench_dict[self.bench]
+    
+            petresdonts = sel.xpath('.//select[contains(@id,"ctl00_ContentPlaceHolder1_ddlPetRespDont")]/option')
+            petresdont_dict = {}
+            for petresdont in petresdonts:
+                key = ''.join(petresdont.xpath('./text()').extract())
+                value = ''.join(petresdont.xpath('./@value').extract())
+                petresdont_dict.update({key : value})
+    
+            petresdont_value = self.who
+            if self.who != '2':
+                petresdont_value = petresdont_dict[self.who]
+    
+            districts = sel.xpath('.//select[contains(@id,"ctl00_ContentPlaceHolder1_ddlDistrict")]/option')
+            district_dict = {}
+            for district in districts:
+                key = ''.join(district.xpath('./text()').extract())
+                value = ''.join(district.xpath('./@value').extract())
+                district_dict.update({key : value})
+    
+            district_value = self.district
+            if self.district != '0':
+                district_value = district_dict[self.district]
+                
+            
+            case_types = sel.xpath('.//select[contains(@id,"ctl00_ContentPlaceHolder1_ddlCaseType")]/option')
+            case_type_dict = {}
+            for case_type in case_types:
+                key = ''.join(case_type.xpath('./text()').extract())
+                value = ''.join(case_type.xpath('./@value').extract())
+                case_type_dict.update({key : value})
+    
+            case_type_value = self.case_type
+            if self.case_type != '0':
+                case_type_value = case_type_dict[self.case_type]
+    
+            submitxy = [(random.randint(10, 90), random.randint(10, 90)) for i in range(10)]
+            submitx, submity = random.choice(submitxy)
+    
+            form_data = {'__EVENTARGUMENT' : ''}
+            form_data.update({'__EVENTTARGET' : ''})
+            form_data.update({'__EVENTVALIDATION' : event_validation})
+            form_data.update({'__VIEWSTATE' : view_state})
+            form_data.update({'__VIEWSTATEGENERATOR' : generator})
+            form_data.update({'ctl00$ContentPlaceHolder1$hfBench' : str(bench_value)})
+            form_data.update({'ctl00$ContentPlaceHolder1$ddlBench' : str(bench_value)})
+            form_data.update({'ctl00$ContentPlaceHolder1$ddlPetRespDont' : str(petresdont_value)})
+            form_data.update({'ctl00$ContentPlaceHolder1$ddlDistrict' : str(district_value)})
+            form_data.update({'ctl00$ContentPlaceHolder1$txtPartyName' : self.resp_name})
+            form_data.update({'ctl00$ContentPlaceHolder1$txtFrmDate' : self.from_})
+            form_data.update({'ctl00$ContentPlaceHolder1$txtToDate' : self.to_})
+            form_data.update({'ctl00$ContentPlaceHolder1$hfdate' : self.to_})
+            form_data.update({'ctl00$ContentPlaceHolder1$ddlCaseType' : str(case_type_value)})
+            form_data.update({'ctl00$ContentPlaceHolder1$btnSubmit.x' : str(submitx)})
+            form_data.update({'ctl00$ContentPlaceHolder1$btnSubmit.y' : str(submity)}) 
+            
+            print form_data
+            yield FormRequest(self.url, callback=self.parse_next, errback = self.errback_httpbin, 
+                              formdata=form_data,dont_filter=True)
+        
+        except BaseException as e:
+            print str(e)+ ' Error on line {}'.format(sys.exc_info()[-1].tb_lineno)
+            pass
 
     def parse_next(self, response):
-        """ After submit """
+        self.log.debug('in parse next')
         sel = Selector(response)
-        table_data = sel.xpath(KX.table_data_xpath)
+        table_data = sel.xpath('.//select[contains(@id,"ctl00_ContentPlaceHolder1_GrvDetails")]')
         headers = ['Case_No', 'District', 'Data_Filed', 'Petitioner',\
                    'Respondent', 'Pet_Advocate', 'Resp_Advocate',\
                    'Sub_Type', 'Sub_SubType', 'Last_Action', 'Next_Hearing']
