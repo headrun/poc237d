@@ -7,6 +7,7 @@ from scrapy.http import FormRequest
 from kpmgkapoc.utils import *
 from kpmgkapoc.items import *
 import karnatakajudiciary_xpaths as KX
+import sys
 
 class KarnatakajudiciaryBrowseSpider(scrapy.Spider):
     """ Spider name """
@@ -106,11 +107,10 @@ class KarnatakajudiciaryBrowseSpider(scrapy.Spider):
             from pprint import pprint
             pprint(form_data)
             url = 'http://karnatakajudiciary.kar.nic.in/CaseStatus_PartyName.aspx'
-            import pdb;pdb.set_trace()
             yield FormRequest(url, callback=self.parse_next, formdata=form_data, dont_filter=True)
 
         except BaseException as e:
-            print str(e)#+ ' Error on line {}'.format(sys.exc_info()[-1].tb_lineno)
+            print str(e) + ' Error on line {}'.format(sys.exc_info()[-1].tb_lineno)
             pass
 
     def parse_next(self, response):
