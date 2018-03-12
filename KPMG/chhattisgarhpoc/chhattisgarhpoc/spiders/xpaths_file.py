@@ -1,0 +1,7 @@
+pet_adv_xpath   = '//span[@class="Petitioner_Advocate_table"]/text()'
+resp_adv_xpath  = '//span[@class="Respondent_Advocate_table"]/text()'
+case_num_xpath  = '//label[contains(text(), "Registration Number")]/../../label/text()'
+status_xpath    = '//strong[contains(text(), "Case Status ")]/following-sibling::strong/text()'
+alt_status_xpath = '//strong[contains(text(), "Stage of Case")]/following-sibling::strong/text()'
+decision_dt_xpath = '//strong[contains(text(), "Decision Date")]/following-sibling::strong/text()'
+csrf_xpath = '//input[@name="__csrf_magic"]/@value'
