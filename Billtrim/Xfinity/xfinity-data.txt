@@ -1,0 +1,5 @@
+Your automatic payment of $251.69 will process on April 01, 2018.
+Previous Balance           $251.69
+New charges due April 1    $251.69
+Payments and Credits      -$251.69
+Total balance due          $251.69
