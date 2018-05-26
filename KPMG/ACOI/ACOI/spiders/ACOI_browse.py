@@ -19,7 +19,6 @@ class ACOI(BaseSpider):
         self.prtype = prtype
         self.year = year
         self.headers = ['Petitioner', 'Respondent', 'PET.ADV', 'RESP.ADV', 'SUBJECT', 'DISTRICT', 'FILING DATE','REG.DATE', 'STATUS']
-        #oupf1 = open('ACOI.csv', 'wb+') 
         oupf1 = open('APHC-%s-%s-%s.csv'  % (self.prtynme,self.year, str(datetime.date.today())), 'wb+')
         self.csv_file  = csv.writer(oupf1) 
         self.csv_file.writerow(self.headers)
