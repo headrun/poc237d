@@ -72,4 +72,3 @@ def get_nodes(data, path):
 
 def md5(x):
     return hashlib.md5(xcode(x)).hexdigest()
-
