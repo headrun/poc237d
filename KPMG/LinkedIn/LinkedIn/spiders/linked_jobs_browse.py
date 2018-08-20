@@ -17,7 +17,7 @@ class Linkedin_companies(scrapy.Spider):
     start_urls = ('https://www.linkedin.com/uas/login?goback=&trk=hb_signin',)
 
     def __init__(self, *args, **kwargs):
-        self.excel_file_name = 'linkedinjobs_data_%s.csv' % str(
+        self.excel_file_name = 'linkedin_jobs_data_%s.csv' % str(
             datetime.datetime.now().date())
         oupf = open(self.excel_file_name, 'ab+')
         self.todays_excel_file = csv.writer(oupf)
@@ -76,27 +76,30 @@ class Linkedin_companies(scrapy.Spider):
                 'authority': 'www.linkedin.com',
                 'referer': 'https://www.linkedin.com/search/results/index/?keywords=kpmg&origin=GLOBAL_SEARCH_HEADER',
         }
-        api_key = 'decoration=%28hitInfo%28com.linkedin.voyager.search.SearchJobJserp%28descriptionSnippet%2CjobPosting~%28entityUrn%2CsavingInfo%2Ctitle%2CformattedLocation%2CapplyingInfo%2Cnew%2CjobState%2CsourceDomain%2CapplyMethod%28com.linkedin.voyager.jobs.OffsiteApply%2Ccom.linkedin.voyager.jobs.SimpleOnsiteApply%2Ccom.linkedin.voyager.jobs.ComplexOnsiteApply%29%2ClistedAt%2CexpireAt%2CclosedAt%2CcompanyDetails%28com.linkedin.voyager.jobs.JobPostingCompany%28company~%28entityUrn%2Cname%2Clogo%2CbackgroundCoverImage%29%29%2Ccom.linkedin.voyager.jobs.JobPostingCompanyName%29%2ClistingType%2CurlPathSegment%2CmatchType%2CmessagingToken%2CmessagingStatus%2CyearsOfExperienceMatch%2CdegreeMatches*%2CskillMatches*%2CstandardizedAddresses%2C~relevanceReason%28entityUrn%2CjobPosting%2Cdetails%28com.linkedin.voyager.jobs.shared.InNetworkRelevanceReasonDetails%28totalNumberOfConnections%2CtopConnections*~%28profilePicture%2CfirstName%2ClastName%2CentityUrn%29%29%2Ccom.linkedin.voyager.jobs.shared.CompanyRecruitRelevanceReasonDetails%28totalNumberOfPastCoworkers%2CcurrentCompany~%28entityUrn%2Cname%2Clogo%2CbackgroundCoverImage%29%29%2Ccom.linkedin.voyager.jobs.shared.SchoolRecruitRelevanceReasonDetails%28totalNumberOfAlumni%2CmostRecentSchool~%28entityUrn%2Cname%2Clogo%29%29%2Ccom.linkedin.voyager.jobs.shared.HiddenGemRelevanceReasonDetails%2Ccom.linkedin.voyager.jobs.shared.JobSeekerQualifiedRelevanceReasonDetails%29%29%2C~preferredCommuteRelevanceReason%28entityUrn%2CjobPosting%2CjobPostingRelevanceReasonDetail%28relevanceReasonFlavor%2CtravelMode%2CmaximumCommuteTravelTimeMinutes%29%29%29%2Csponsored%2CencryptedBiddingParameters%29%2Ccom.linkedin.voyager.*%29%2CtrackingId%29&count=25'
-        api_url_inner = "https://www.linkedin.com/voyager/api/search/hits?"
-        api_url_withkeyword = "&f_C=List()&f_CF=List()&f_E=List()&f_ES=List()&f_ET=List()&f_F=List()&f_GC=List()&f_I=List()&f_JT=List()&f_L=List()&f_LF=List()&f_SB=List()&f_SB2=List()&f_SB3=List()&f_T=List()&f_TP=List()&keywords=kpmg&origin=JOB_SEARCH_RESULTS_PAGE&q=jserpAll&query=search&sortBy=R"
-        api_url = "%s%s%s" % (api_url_inner, api_key, api_url_withkeyword)
-        yield Request(api_url, callback=self.parse_again, headers=headers)
+	api_url = "https://www.linkedin.com/voyager/api/search/hits?decoration=%28hitInfo%28com.linkedin.voyager.search.SearchJobJserp%28descriptionSnippet%2CjobPosting~%28entityUrn%2CsavingInfo%2Ctitle%2CformattedLocation%2CapplyingInfo%2Cnew%2CjobState%2CsourceDomain%2CapplyMethod%28com.linkedin.voyager.jobs.OffsiteApply%2Ccom.linkedin.voyager.jobs.SimpleOnsiteApply%2Ccom.linkedin.voyager.jobs.ComplexOnsiteApply%29%2ClistedAt%2CexpireAt%2CclosedAt%2CcompanyDetails%28com.linkedin.voyager.jobs.JobPostingCompany%28company~%28entityUrn%2Cname%2Clogo%2CbackgroundCoverImage%29%29%2Ccom.linkedin.voyager.jobs.JobPostingCompanyName%29%2ClistingType%2CurlPathSegment%2CmatchType%2CmessagingToken%2CmessagingStatus%2CyearsOfExperienceMatch%2CdegreeMatches*%2CskillMatches*%2CstandardizedAddresses%2C~relevanceReason%28entityUrn%2CjobPosting%2Cdetails%28com.linkedin.voyager.jobs.shared.InNetworkRelevanceReasonDetails%28totalNumberOfConnections%2CtopConnections*~%28profilePicture%2CfirstName%2ClastName%2CentityUrn%29%29%2Ccom.linkedin.voyager.jobs.shared.CompanyRecruitRelevanceReasonDetails%28totalNumberOfPastCoworkers%2CcurrentCompany~%28entityUrn%2Cname%2Clogo%2CbackgroundCoverImage%29%29%2Ccom.linkedin.voyager.jobs.shared.SchoolRecruitRelevanceReasonDetails%28totalNumberOfAlumni%2CmostRecentSchool~%28entityUrn%2Cname%2Clogo%29%29%2Ccom.linkedin.voyager.jobs.shared.HiddenGemRelevanceReasonDetails%2Ccom.linkedin.voyager.jobs.shared.JobSeekerQualifiedRelevanceReasonDetails%29%29%2C~preferredCommuteRelevanceReason%28entityUrn%2CjobPosting%2CjobPostingRelevanceReasonDetail%28relevanceReasonFlavor%2CtravelMode%2CmaximumCommuteTravelTimeMinutes%29%29%29%2Csponsored%2CencryptedBiddingParameters%29%2Ccom.linkedin.voyager.*%29%2CtrackingId%29&count=25&f_C=List()&f_CF=List()&f_E=List()&f_ES=List()&f_ET=List()&f_F=List()&f_GC=List()&f_I=List()&f_JT=List()&f_L=List()&f_LF=List()&f_SB=List()&f_SB2=List()&f_SB3=List()&f_T=List()&f_TP=List()&keywords=kpmg&origin=JOB_SEARCH_RESULTS_PAGE&q=jserpAll&query=search&sortBy=R"
+        yield Request(api_url, callback=self.parse_again, headers=headers, meta = {'headers':headers, 'main_url':"https://www.linkedin.com/voyager/api/search/hits?decoration=%28hitInfo%28com.linkedin.voyager.search.SearchJobJserp%28descriptionSnippet%2CjobPosting~%28entityUrn%2CsavingInfo%2Ctitle%2CformattedLocation%2CapplyingInfo%2Cnew%2CjobState%2CsourceDomain%2CapplyMethod%28com.linkedin.voyager.jobs.OffsiteApply%2Ccom.linkedin.voyager.jobs.SimpleOnsiteApply%2Ccom.linkedin.voyager.jobs.ComplexOnsiteApply%29%2ClistedAt%2CexpireAt%2CclosedAt%2CcompanyDetails%28com.linkedin.voyager.jobs.JobPostingCompany%28company~%28entityUrn%2Cname%2Clogo%2CbackgroundCoverImage%29%29%2Ccom.linkedin.voyager.jobs.JobPostingCompanyName%29%2ClistingType%2CurlPathSegment%2CmatchType%2CmessagingToken%2CmessagingStatus%2CyearsOfExperienceMatch%2CdegreeMatches*%2CskillMatches*%2CstandardizedAddresses%2C~relevanceReason%28entityUrn%2CjobPosting%2Cdetails%28com.linkedin.voyager.jobs.shared.InNetworkRelevanceReasonDetails%28totalNumberOfConnections%2CtopConnections*~%28profilePicture%2CfirstName%2ClastName%2CentityUrn%29%29%2Ccom.linkedin.voyager.jobs.shared.CompanyRecruitRelevanceReasonDetails%28totalNumberOfPastCoworkers%2CcurrentCompany~%28entityUrn%2Cname%2Clogo%2CbackgroundCoverImage%29%29%2Ccom.linkedin.voyager.jobs.shared.SchoolRecruitRelevanceReasonDetails%28totalNumberOfAlumni%2CmostRecentSchool~%28entityUrn%2Cname%2Clogo%29%29%2Ccom.linkedin.voyager.jobs.shared.HiddenGemRelevanceReasonDetails%2Ccom.linkedin.voyager.jobs.shared.JobSeekerQualifiedRelevanceReasonDetails%29%29%2C~preferredCommuteRelevanceReason%28entityUrn%2CjobPosting%2CjobPostingRelevanceReasonDetail%28relevanceReasonFlavor%2CtravelMode%2CmaximumCommuteTravelTimeMinutes%29%29%29%2Csponsored%2CencryptedBiddingParameters%29%2Ccom.linkedin.voyager.*%29%2CtrackingId%29&f_C=List()&f_CF=List()&f_E=List()&f_ES=List()&f_ET=List()&f_F=List()&f_GC=List()&f_I=List()&f_JT=List()&f_L=List()&f_LF=List()&f_SB=List()&f_SB2=List()&f_SB3=List()&f_T=List()&f_TP=List()&keywords=kpmg&origin=JOB_SEARCH_RESULTS_PAGE&q=jserpAll&query=search&sortBy=R"})
 
     def parse_again(self, response):
-        json_tmp = json.loads(response.body)
-        json_elements = json_tmp.get('elements', [])
-        headers = {
-            'authority': 'www.linkedin.com',
-                'referer': 'https://www.linkedin.com/',
-        }
-        for element in json_elements:
-            compnay_id = ''.join(element.get('hitInfo', {}).get(
-                'com.linkedin.voyager.search.SearchJobJserp', {}).get('jobPosting', ''))
-            compnay_full_id = compnay_id.split('jobPosting:')[-1]
-            job_view_url = ''.join(
-                "https://www.linkedin.com/jobs/view/%s/" % (compnay_full_id))
-            company_title = ''.join(element.get('hitInfo', {}).get(
-                'com.linkedin.voyager.search.SearchJobJserp', {}).get('jobPostingResolutionResult', {}).get('title', ''))
-            values = [compnay_full_id, job_view_url, company_title]
-            self.todays_excel_file.writerow(values)
-
+	main_url = response.meta.get('main_url','')
+	json_tmp = json.loads(response.body)
+	inner_elements = json_tmp.get('elements', [])
+	headers = response.meta.get('headers','')
+	for element in inner_elements:
+	    compnay_id = ''.join(element.get('hitInfo', {}).get(
+		'com.linkedin.voyager.search.SearchJobJserp', {}).get('jobPosting', ''))
+	    compnay_full_id = compnay_id.split('jobPosting:')[-1]
+	    job_view_url = ''.join(
+		"https://www.linkedin.com/jobs/view/%s/" % (compnay_full_id))
+	    company_title = ''.join(element.get('hitInfo', {}).get(
+		'com.linkedin.voyager.search.SearchJobJserp', {}).get('jobPostingResolutionResult', {}).get('title', ''))
+	    values = [compnay_full_id, job_view_url, company_title]
+	    self.todays_excel_file.writerow(values)
+	url_paging  = json_tmp.get('paging',[])
+	if url_paging:
+		count_data = url_paging.get('count','')
+		start_data = url_paging.get('start','')
+		total_data = url_paging.get('total','')
+		if total_data > count_data+start_data:
+			cons_part = "&count=%s&start=%s"%(count_data, start_data+count_data)
+			retrun_url = "%s%s"%(main_url,cons_part)
+			yield Request(retrun_url, headers=headers, callback=self.parse_again, meta={'main_url':main_url, 'headers':headers, "nav":"true"})

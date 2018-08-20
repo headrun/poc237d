@@ -147,6 +147,7 @@ class Linkedinvoyagerpeoplesrp(scrapy.Spider):
 			count_data = url_paging.get('count','')
 			start_data = url_paging.get('start','')
 			total_data = url_paging.get('total','')
+			import pdb;pdb.set_trace()
 			if total_data > count_data+start_data:
 				cons_part = ''
 				if '?' not in api_basic_url:
@@ -193,4 +194,3 @@ class Linkedinvoyagerpeoplesrp(scrapy.Spider):
 		values = [normalize(i) for i in values]
 		self.csv_file.writerow(values)
 		print f_name
-
