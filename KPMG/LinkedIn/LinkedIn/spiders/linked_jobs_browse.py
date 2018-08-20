@@ -12,7 +12,7 @@ sys.setdefaultencoding('utf8')
 
 
 class Linkedin_companies(scrapy.Spider):
-    name = 'linkedin_companies_browse'
+    name = 'linkedin_jobs_browse'
     allowed_domains = ["linkedin.com"]
     start_urls = ('https://www.linkedin.com/uas/login?goback=&trk=hb_signin',)
 
@@ -99,7 +99,8 @@ class Linkedin_companies(scrapy.Spider):
 		count_data = url_paging.get('count','')
 		start_data = url_paging.get('start','')
 		total_data = url_paging.get('total','')
-		if total_data > count_data+start_data:
+		#if total_data > count_data+start_data:
+		if total_data > count_data+start_data and inner_elements:
 			cons_part = "&count=%s&start=%s"%(count_data, start_data+count_data)
 			retrun_url = "%s%s"%(main_url,cons_part)
 			yield Request(retrun_url, headers=headers, callback=self.parse_again, meta={'main_url':main_url, 'headers':headers, "nav":"true"})

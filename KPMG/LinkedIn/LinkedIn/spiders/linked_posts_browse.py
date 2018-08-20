@@ -21,7 +21,7 @@ class Linkedin_companies(scrapy.Spider):
             datetime.datetime.now().date())
         oupf = open(self.excel_file_name, 'ab+')
         self.todays_excel_file = csv.writer(oupf)
-        self.header_params = ['First Name', 'Last Name', 'Occupation', 'Information']
+        self.header_params = ['First Name', 'Last Name', 'Occupation', 'Information', 'Likes', 'Crawler']
         self.todays_excel_file.writerow(self.header_params)
 
     def parse(self, response):
@@ -76,10 +76,6 @@ class Linkedin_companies(scrapy.Spider):
                 'authority': 'www.linkedin.com',
                 'referer': 'https://www.linkedin.com/search/results/index/?keywords=kpmg&origin=GLOBAL_SEARCH_HEADER',
         }
-        #api_key = 'decoration=%28hitInfo%28com.linkedin.voyager.search.SearchJobJserp%28descriptionSnippet%2CjobPosting~%28entityUrn%2CsavingInfo%2Ctitle%2CformattedLocation%2CapplyingInfo%2Cnew%2CjobState%2CsourceDomain%2CapplyMethod%28com.linkedin.voyager.jobs.OffsiteApply%2Ccom.linkedin.voyager.jobs.SimpleOnsiteApply%2Ccom.linkedin.voyager.jobs.ComplexOnsiteApply%29%2ClistedAt%2CexpireAt%2CclosedAt%2CcompanyDetails%28com.linkedin.voyager.jobs.JobPostingCompany%28company~%28entityUrn%2Cname%2Clogo%2CbackgroundCoverImage%29%29%2Ccom.linkedin.voyager.jobs.JobPostingCompanyName%29%2ClistingType%2CurlPathSegment%2CmatchType%2CmessagingToken%2CmessagingStatus%2CyearsOfExperienceMatch%2CdegreeMatches*%2CskillMatches*%2CstandardizedAddresses%2C~relevanceReason%28entityUrn%2CjobPosting%2Cdetails%28com.linkedin.voyager.jobs.shared.InNetworkRelevanceReasonDetails%28totalNumberOfConnections%2CtopConnections*~%28profilePicture%2CfirstName%2ClastName%2CentityUrn%29%29%2Ccom.linkedin.voyager.jobs.shared.CompanyRecruitRelevanceReasonDetails%28totalNumberOfPastCoworkers%2CcurrentCompany~%28entityUrn%2Cname%2Clogo%2CbackgroundCoverImage%29%29%2Ccom.linkedin.voyager.jobs.shared.SchoolRecruitRelevanceReasonDetails%28totalNumberOfAlumni%2CmostRecentSchool~%28entityUrn%2Cname%2Clogo%29%29%2Ccom.linkedin.voyager.jobs.shared.HiddenGemRelevanceReasonDetails%2Ccom.linkedin.voyager.jobs.shared.JobSeekerQualifiedRelevanceReasonDetails%29%29%2C~preferredCommuteRelevanceReason%28entityUrn%2CjobPosting%2CjobPostingRelevanceReasonDetail%28relevanceReasonFlavor%2CtravelMode%2CmaximumCommuteTravelTimeMinutes%29%29%29%2Csponsored%2CencryptedBiddingParameters%29%2Ccom.linkedin.voyager.*%29%2CtrackingId%29&count=25'
-        #api_url_inner = "https://www.linkedin.com/voyager/api/search/hits?"
-        #api_url_withkeyword = "&f_C=List()&f_CF=List()&f_E=List()&f_ES=List()&f_ET=List()&f_F=List()&f_GC=List()&f_I=List()&f_JT=List()&f_L=List()&f_LF=List()&f_SB=List()&f_SB2=List()&f_SB3=List()&f_T=List()&f_TP=List()&keywords=kpmg&origin=JOB_SEARCH_RESULTS_PAGE&q=jserpAll&query=search&sortBy=R"
-        #api_url = "%s%s%s" % (api_url_inner, api_key, api_url_withkeyword)
 	api_url = "https://www.linkedin.com/voyager/api/search/cluster?count=6&guides=List(v-%3ECONTENT)&keywords=kpmg&origin=SWITCH_SEARCH_VERTICAL&q=guided&start=0"
         yield Request(api_url, callback=self.parse_again, headers=headers, meta={"main_url":"https://www.linkedin.com/voyager/api/search/hits?guides=List(v->CONTENT)&keywords=kpmg&origin=SWITCH_SEARCH_VERTICAL&q=guided", "headers":headers, "nav":"false"})
 
@@ -99,9 +95,11 @@ class Linkedin_companies(scrapy.Spider):
 				last_name = profile.get('lastName','')
 				occupation = profile.get('occupation','')
 				content = element.get('hitInfo', {}).get('com.linkedin.voyager.feed.Update',{}).get('value',{}).get('com.linkedin.voyager.feed.ShareUpdate',{}).get('content',{}).get('com.linkedin.voyager.feed.ShareText',{}).get('text',{}).get('values',[])
+				likes = element.get('hitInfo',{}).get('com.linkedin.voyager.feed.Update',{}).get('socialDetail',{}).get('totalSocialActivityCounts',{}).get('numLikes','')
+                                comments = element.get('hitInfo', {}).get('com.linkedin.voyager.feed.Update',{}).get('socialDetail',{}).get('totalSocialActivityCounts',{}).get('numComments','')
 				for info in content:
 				    information = info.get('value','')
-				    values = [first_name, last_name, occupation, information]
+				    values = [first_name, last_name, occupation, information, likes, comments]
 				    print values
 				    self.todays_excel_file.writerow(values)
 			else:
@@ -112,31 +110,31 @@ class Linkedin_companies(scrapy.Spider):
                                 self.todays_excel_file.writerow(values)
 	else:
 		for eachjso in json_elements:
-			print eachjso.get('hitInfo', {}).get('com.linkedin.voyager.feed.Update', {}).get('id', '')
+		       	id = eachjso.get('hitInfo', {}).get('com.linkedin.voyager.feed.Update', {}).get('id', '')
 			profile = eachjso.get('hitInfo', {}).get('com.linkedin.voyager.feed.Update',{}).get('value',{}).get('com.linkedin.voyager.feed.ShareUpdate',{}).get('actor',{}).get('com.linkedin.voyager.feed.MemberActor',{}).get('miniProfile',{})
-                        if profile:
-                                first_name = profile.get('firstName','')
-                                last_name = profile.get('lastName','')
-                                occupation = profile.get('occupation','')
-                                content = eachjso.get('hitInfo', {}).get('com.linkedin.voyager.feed.Update',{}).get('value',{}).get('com.linkedin.voyager.feed.ShareUpdate',{}).get('content',{}).get('com.linkedin.voyager.feed.ShareText',{}).get('text',{}).get('values','')
-                                for info in content:
-                                        information = info.get('value','')
-                                        likes = eachjso.get('hitInfo',{}).get('com.linkedin.voyager.feed.Update',{}).get('socialDetail',{}).get('totalSocialActivityCounts',{}).get('numLikes','')
-                                        comments = eachjso.get('hitInfo', {}).get('com.linkedin.voyager.feed.Update',{}).get('socialDetail',{}).get('totalSocialActivityCounts',{}).get('numComments','')
-                                        values = [first_name,last_name,occupation,information,likes,comments]
-                                        self.todays_excel_file.writerow(values)
-                        else:
-                                profile = eachjso.get('hitInfo',{}).get('com.linkedin.voyager.feed.Update',{}).get('value',{}).get('com.linkedin.voyager.feed.ArticleUpdate',{}).get('content',{}).get('com.linkedin.voyager.feed.ShareArticle',{}).get('article',{}).get('article',{}).get('title','')
-                                likes = eachjso.get('hitInfo',{}).get('com.linkedin.voyager.feed.Update',{}).get('socialDetail',{}).get('totalSocialActivityCounts',{}).get('numLikes','')
-                                comments = eachjso.get('hitInfo', {}).get('com.linkedin.voyager.feed.Update',{}).get('socialDetail',{}).get('totalSocialActivityCounts',{}).get('numComments','')
-                                values = [profile,'','','',likes,comments]
-                                self.todays_excel_file.writerow(values)
+			if profile:
+				first_name = profile.get('firstName','')
+				last_name = profile.get('lastName','')
+				occupation = profile.get('occupation','')
+				content = eachjso.get('hitInfo', {}).get('com.linkedin.voyager.feed.Update',{}).get('value',{}).get('com.linkedin.voyager.feed.ShareUpdate',{}).get('content',{}).get('com.linkedin.voyager.feed.ShareText',{}).get('text',{}).get('values','')
+				for info in content:
+					information = info.get('value','')
+					likes = eachjso.get('hitInfo',{}).get('com.linkedin.voyager.feed.Update',{}).get('socialDetail',{}).get('totalSocialActivityCounts',{}).get('numLikes','')
+					comments = eachjso.get('hitInfo', {}).get('com.linkedin.voyager.feed.Update',{}).get('socialDetail',{}).get('totalSocialActivityCounts',{}).get('numComments','')
+					values = [first_name,last_name,occupation,information,likes,comments]
+					self.todays_excel_file.writerow(values)
+			else:
+				profile = eachjso.get('hitInfo',{}).get('com.linkedin.voyager.feed.Update',{}).get('value',{}).get('com.linkedin.voyager.feed.ArticleUpdate',{}).get('content',{}).get('com.linkedin.voyager.feed.ShareArticle',{}).get('article',{}).get('article',{}).get('title','')
+				likes = eachjso.get('hitInfo',{}).get('com.linkedin.voyager.feed.Update',{}).get('socialDetail',{}).get('totalSocialActivityCounts',{}).get('numLikes','')
+				comments = eachjso.get('hitInfo', {}).get('com.linkedin.voyager.feed.Update',{}).get('socialDetail',{}).get('totalSocialActivityCounts',{}).get('numComments','')
+				values = [profile,'','','',likes,comments]
+				self.todays_excel_file.writerow(values)
 
 	if url_paging:
 		count_data = url_paging.get('count','')
 		start_data = url_paging.get('start','')
 		total_data = url_paging.get('total','')
-		if total_data > count_data+start_data:
+		if total_data > count_data+start_data and json_elements:
 			cons_part = "&count=%s&start=%s"%(count_data, start_data+count_data)
 			retrun_url = "%s%s"%(main_url,cons_part)
 			yield Request(retrun_url, headers=headers, callback=self.parse_again, meta={'main_url':main_url, 'headers':headers, "nav":"true"})
