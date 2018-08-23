@@ -23,13 +23,11 @@ class WorldBank(BaseSpider):
 		court_headers = ['Name', 'Address', 'Country', 'Period From', 'Period To', 'Grounds']
 
 	def start_requests(self):
-		#url = 'http://web.worldbank.org/external/default/main?pagePK=64148989&piPK=64148984&theSitePK=84266&theSitePK=84266&contentMDK=64069844&querycontentMDK=64069700&sup_name=MARK&supp_country='
 		url = 'http://web.worldbank.org/external/default/main?pagePK=64148989&piPK=64148984&theSitePK=84266&theSitePK=84266&contentMDK=64069844&querycontentMDK=64069700&sup_name='+self.keyword+'&supp_country='
 		yield Request(url, callback=self.parse)
 
 	def parse(self, response):
 		sel = Selector(response)
-		#nodes = sel.xpath('//table[@summary="List of Debarred Firms"]//tr')
 		nodes =  sel.xpath('//table[@summary="List of Debarred Firms"]/script//following-sibling::tr')
 		for node in nodes:
 			first_name = ''.join(node.xpath('./td[1]//text()').extract())
