@@ -32,7 +32,6 @@ class CIAgov(Spider):
         for each_link in total_links:
             link = "https://www.cia.gov/library/publications/resources/world-leaders-1/" + each_link
             print link
-	    import pdb;pdb.set_trace()
             yield Request(link, callback=self.parse_text)
 
     def parse_text(self, response):
