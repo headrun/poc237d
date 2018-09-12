@@ -18,7 +18,7 @@ class WorldBank(BaseSpider):
                 oupf1 = open('world_stars_settlements-%s.csv'  % (str(datetime.date.today())), 'wb+')
                 self.csv_file  = csv.writer(oupf1)
                 self.csv_file.writerow(self.headers)
-		self.headings = ['Pdf url','Case title', 'Jurisdiction of Origin', 'UNCAC Offenses Implicated', 'Money laundering Implicated', 'Legal Basis for Asset Recovery', 'Contributing Factors in Asset Recovery', 'Case Summary', 'Disposition of Criminal Case(s)']
+		self.headings = ['Pdf url','Case title', 'Jurisdiction of Origin', 'UNCAC Offenses Implicated', 'Money laundering Implicated', 'Legal Basis for Asset Recovery', 'Contributing Factors in Asset Recovery', 'Assets Adjudicated/Not Yet Returned (USD)', 'Case Summary', 'Disposition of Criminal Case(s)']
         	oupf2 = open('world_stars_assets-%s.csv' %(str(datetime.date.today())), 'wb+')
         	self.document_file = csv.writer(oupf2)
         	self.document_file.writerow(self.headings)
@@ -46,8 +46,8 @@ class WorldBank(BaseSpider):
 			jurisdiction = ''.join(node.xpath('./td[2]//text()').extract()).strip()
 			yield Request(pdf_url, callback=self.parse_detailed_information, meta = {'case_name':title, 'jurisdiction':jurisdiction})
 
-		url_paging = ''.join(sel.xpath('//div[@class="col-md-12 col-sm-12 npr npl paginationCont"]//div[@class="col-md-4 col-sm-4 txtRight"]/span/a/@href').extract())
-		if not url_paging: url_paging = ''.join(sel.xpath('//div[@class="col-md-12 col-sm-12 npr npl paginationCont"]//div[@class="col-md-4 col-sm-4 txtRight"]/span[2]/a/@href').extract())
+		url_paging = ''.join(sel.xpath('//div[@class="col-md-12 col-sm-12 npr npl paginationCont"]//div[@class="col-md-4 col-sm-4 txtRight"]/span[@class="prev"]/following-sibling::span/a/@href').extract())
+		if not url_paging: url_paging = ''.join(sel.xpath('//div[@class="col-md-12 col-sm-12 npr npl paginationCont"]//div[@class="col-md-4 col-sm-4 txtRight"]/span/a/@href').extract())
 		pagination = 'https://star.worldbank.org/' + url_paging
 		yield Request(pagination, callback=self.parse_settlements)
 
@@ -79,8 +79,8 @@ class WorldBank(BaseSpider):
 			jurisdiction = ''.join(node.xpath('./td[3]//text()').extract()).strip()
 			yield Request(pdf_url, callback=self.parse_complete_assests,  meta = {'case_name':title, 'jurisdiction':jurisdiction})
 
-		url_paging = ''.join(sel.xpath('//div[@class="col-md-12 col-sm-12 npr npl paginationCont"]//div[@class="col-md-4 col-sm-4 txtRight"]/span/a/@href').extract())
-		if not url_paging: url_paging = ''.join(sel.xpath('//div[@class="col-md-12 col-sm-12 npr npl paginationCont"]//div[@class="col-md-4 col-sm-4 txtRight"]//span[2]/a/@href').extract())
+		url_paging = ''.join(sel.xpath('//div[@class="col-md-12 col-sm-12 npr npl paginationCont"]//div[@class="col-md-4 col-sm-4 txtRight"]//span[2]/a/@href').extract())
+		if not url_paging: url_paging = ''.join(sel.xpath('//div[@class="col-md-12 col-sm-12 npr npl paginationCont"]//div[@class="col-md-4 col-sm-4 txtRight"]/span/a/@href').extract())
                 pagination = 'https://star.worldbank.org/' + url_paging
 		yield Request(pagination, callback=self.parse_assests)
 
@@ -101,11 +101,14 @@ class WorldBank(BaseSpider):
 		contri_factors = ''.join(re.findall('Contributing Factors in Asset Recovery:\xa0\)\](.*)\[\(Status of Asset Recovery', assests_info.replace('\n', '')))
 		con_list = re.findall('\([^\[\]]*\)', contri_factors)
 		factors = ''.join([con.replace('))', ') ').replace('((', ' (').strip('(').strip(')') for con in con_list]).replace('\\','').strip()
+		assests_adjudicated = ''.join(re.findall('Assets Adjudicated, Not Yet Returned(.*)Assets Returned', assests_info.replace('\n', '')))
+		adjudicated = re.findall('\([^\[\]]*\)', assests_adjudicated)
+		final_Adjudicated = ''.join([adj.replace('))', ') ').replace('((', ' (').strip('(').strip(')') for adj in adjudicated]).replace('\\','').strip().replace('USD):\xa0','')
 		summary = ''.join(re.findall('Case Summary:\xa0\)\](.*)\[\(Disposition of Criminal Case', assests_info.replace('\n', '')))
 		sum_list = re.findall('\([^\[\]]*\)', summary)
 		case_summary =''.join([sum.replace('))', ') ').replace('((', ' (').strip('(').strip(')') for sum in sum_list]).replace('\\','').strip()
 		invest = ''.join(re.findall('Disposition of Criminal Case(.*)Jurisdiction of Origin: Investigative Agency', assests_info.replace('\n', '')))
 		jur_invest = re.findall('\([^\[\]]*\)', invest)
 		final_invest = ''.join([jur.replace('))', ') ').replace('((', ' (').strip('(').strip(')') for jur in jur_invest]).replace('\\','').strip().replace('s):\xa0','')
-		values = [url, case_name, jurisdiction, Offenses, money_laundering, legal_basis, factors, case_summary, final_invest]
+		values = [url, case_name, jurisdiction, Offenses, money_laundering, legal_basis, factors, final_Adjudicated, case_summary, final_invest]
             	self.document_file.writerow(values)
