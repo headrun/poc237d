@@ -1,3 +1,5 @@
+start_urls_list = ['https://www.interpol.int/notice/search/wanted']
+fields_list = ["url", "Family_name", "Criminal_Name", "sex", "Date_of_birth", "Place_of_birth", "Language_spoken", "Nationality", "Charges", "Regions_where_wanted"]
 headers_list = {
             'Connection': 'keep-alive',
             'Pragma': 'no-cache',
