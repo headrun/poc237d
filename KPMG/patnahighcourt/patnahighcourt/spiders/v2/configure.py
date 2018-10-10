@@ -1,4 +1,5 @@
-basic_search_url_list = 'http://patnahighcourt.gov.in/CaseSeachByName.aspx'
+url_list = 'http://patnahighcourt.gov.in/CaseSeachByName.aspx'
+basic_search_url = 'http://patnahighcourt.gov.in/CaseSeachByName.aspx'
 DEFAULT_HEADERS_LIST = {
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
     'Connection': 'keep-alive',

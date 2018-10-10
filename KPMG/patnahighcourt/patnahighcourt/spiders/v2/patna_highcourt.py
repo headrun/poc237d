@@ -24,11 +24,9 @@ class PatnaHighCourt(Spider):
         self.excel_file_name = 'patna_data_'+self.keyword.replace(' ', '_')+'_'+self.year.strip()+'.csv'
         self.oupf = open(self.excel_file_name, 'w+')
         self.todays_excel_file = csv.writer(self.oupf) 
-        court_headers = ['Token Number', 'Status', 'Petitioner', 'Respondent', 'Date of Filing', 'Case Number']
-        self.todays_excel_file.writerow(court_headers) 
 
     def start_requests(self):
-        url = 'http://patnahighcourt.gov.in/CaseSeachByName.aspx'
+        url = configure.url_list
         yield Request(url, callback=self.parse, headers=DEFAULT_HEADERS)
 
     def parse(self, response):
@@ -63,7 +61,7 @@ class PatnaHighCourt(Spider):
             ('ctl00$MainContent$txtCaptcha', cookies.get('CaptchaImageText', '')),
             ('ctl00$MainContent$btnSeach', 'Show'),
         ]
-        basic_search_url = configure.basic_search_url_list
+        basic_search_url = configure.basic_search_url
 	yield FormRequest(basic_search_url, callback=self.parse_results, headers=headers, formdata=data, cookies=cookies, meta={'req_cookie':cookies})
 
     def parse_results(self, response):
