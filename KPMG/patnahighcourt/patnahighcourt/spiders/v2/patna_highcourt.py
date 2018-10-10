@@ -7,9 +7,9 @@ from scrapy.selector import Selector
 from scrapy.http import Request, FormRequest
 
 import xpaths_file
-import headers_file 
+import configure 
 
-DEFAULT_HEADERS = headers_file.DEFAULT_HEADERS_LIST
+DEFAULT_HEADERS = configure.DEFAULT_HEADERS_LIST
  
 def extract_data(sel, xpath_, delim=''):
     return delim.join(sel.xpath(xpath_).extract()).strip()
@@ -41,7 +41,7 @@ class PatnaHighCourt(Spider):
                 try: key, val = data.split('=', 1)
                 except: continue
                 cookies.update({key.strip():val.strip()})
-            headers = headers_file.headers_list
+            headers = configure.headers_list
  			
         event_target = extract_data(sel, xpaths_file.event_target_list)
         event_argument = extract_data(sel, xpaths_file.event_argument_list)
@@ -63,9 +63,8 @@ class PatnaHighCourt(Spider):
             ('ctl00$MainContent$txtCaptcha', cookies.get('CaptchaImageText', '')),
             ('ctl00$MainContent$btnSeach', 'Show'),
         ]
-        basic_search_url = 'http://patnahighcourt.gov.in/CaseSeachByName.aspx'
-
-        yield FormRequest(basic_search_url, callback=self.parse_results, headers=headers, formdata=data, cookies=cookies, meta={'req_cookie':cookies})
+        basic_search_url = configure.basic_search_url_list
+	yield FormRequest(basic_search_url, callback=self.parse_results, headers=headers, formdata=data, cookies=cookies, meta={'req_cookie':cookies})
 
     def parse_results(self, response):
         sel = Selector(response)
@@ -90,7 +89,7 @@ class PatnaHighCourt(Spider):
                     ev_target, ev_argument = values[0]
                     screen_y = random.choice(range(0, 100))
 
-                headers = headers_file.headers_results
+                headers = configure.headers_results
                 data = [
 	                   ('__EVENTTARGET', ev_target),
 		                  ('__EVENTARGUMENT', ev_argument),
