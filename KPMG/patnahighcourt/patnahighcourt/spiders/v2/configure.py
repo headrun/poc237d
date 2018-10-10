@@ -34,3 +34,4 @@ headers_results = {
      'Referer': 'http://patnahighcourt.gov.in/CaseSeachByName.aspx',
      'Connection': 'keep-alive',
 }
+base_url_result = 'http://patnahighcourt.gov.in/CaseSeachByName.aspx'

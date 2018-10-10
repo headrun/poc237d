@@ -101,7 +101,7 @@ class PatnaHighCourt(Spider):
 		                  ('ctl00$MainContent$txtYear', ''),
 		                  ('ctl00$MainContent$txtCaptcha', ''),
 		]
-                base_url = 'http://patnahighcourt.gov.in/CaseSeachByName.aspx'
+                base_url = configure.base_url_results
                 yield FormRequest(base_url, self.parse_eachcase, headers=headers, formdata=data, cookies=cookies)		
 
 
