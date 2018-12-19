@@ -37,6 +37,7 @@ class WorldBank(BaseSpider):
 			yield Request(asset_url, callback=self.parse_assests)
 
 	def parse_settlements(self, response):	
+	    import pdb;pdb.set_trace()
 	    headers = {
 	    'origin': 'https://star.worldbank.org',
 	    'accept-encoding': 'gzip, deflate, br',

@@ -63,6 +63,7 @@ class Interpol(BaseSpider):
          This function contains required xpaths
         '''
         sel = Selector(response)
+	import pdb;pdb.set_trace()
         reference = response.meta['reference']
         last_page_links = sel.xpath('//a[contains(@href, "/notice/search")]/@href').extract()
         for last_page in last_page_links:

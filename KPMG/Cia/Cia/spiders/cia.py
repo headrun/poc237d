@@ -42,5 +42,6 @@ class CIAgov(Spider):
         for container in containers:
             key = ''.join(container.xpath('.//span[@class="title"]//text()').extract()).strip()
             value = ''.join(container.xpath('.//span[@class="cos_name"]//text()').extract()).strip()
+	    import pdb;pdb.set_trace()
             csv_values = [reference, country, key, value]
             self.csv_file.writerow(csv_values)
